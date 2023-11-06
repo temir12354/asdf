@@ -1,0 +1,88 @@
+import pygame
+import random
+
+# Определение размера окна
+WIDTH = 800
+HEIGHT = 600
+
+# Определение цветовых констант
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+GRAY = (128, 128, 128)
+
+# Определение размеров клетки
+CELL_SIZE = 40
+ROWS = HEIGHT // CELL_SIZE
+COLS = WIDTH // CELL_SIZE
+
+# Инициализация Pygame
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+clock = pygame.time.Clock()
+
+# Функция для рисования сетки
+def draw_grid():
+    for x in range(0, WIDTH, CELL_SIZE):
+        pygame.draw.line(screen, GRAY, (x, 0), (x, HEIGHT))
+    for y in range(0, HEIGHT, CELL_SIZE):
+        pygame.draw.line(screen, GRAY, (0, y), (WIDTH, y))
+
+# Класс для ячейки игрового поля
+class Cell:
+    def __init__(self, x, y, has_mine=False):
+        self.x = x
+        self.y = y
+        self.has_mine = has_mine
+        self.is_revealed = False
+
+    def reveal(self):
+        self.is_revealed = True
+
+    def draw(self):
+        rect = pygame.Rect(self.x * CELL_SIZE, self.y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+        if self.is_revealed:
+            pygame.draw.rect(screen, WHITE, rect)
+        else:
+            pygame.draw.rect(screen, GRAY, rect, 1)
+
+# Создание игрового поля
+grid = [[Cell(x, y, random.random() < 0.2) for y in range(COLS)] for x in range(ROWS)]
+
+# Функция для отображения игрового поля
+def draw_grid_cells():
+    for row in grid:
+        for cell in row:
+            cell.draw()
+
+# Главный игровой цикл
+running = True
+while running:
+    # Обработка событий
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:
+                # Получение координат мыши
+                mouse_pos = pygame.mouse.get_pos()
+                col = mouse_pos[0] // CELL_SIZE
+                row = mouse_pos[1] // CELL_SIZE
+
+                if not grid[row][col].has_mine:
+                    # Раскрытие ячеек
+                    grid[row][col].reveal()
+                else:
+                    # Вывод сообщения о проигрыше
+                    print("Game Over!")
+
+    # Отрисовка игрового поля
+    screen.fill(BLACK)
+    draw_grid()
+    draw_grid_cells()
+
+    # Обновление экрана
+    pygame.display.flip()
+    clock.tick(60)
+
+# Завершение игры
+pygame.quit()
